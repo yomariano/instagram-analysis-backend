@@ -4,6 +4,11 @@ from typing import List
 
 router = APIRouter()
 
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint"""
+    return {"message": "API is working!", "status": "ok"}
+
 @router.post("/accounts")
 async def add_instagram_account(account: dict):
     """Add an Instagram account for analysis"""
