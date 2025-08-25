@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     apify_token: str = os.getenv("APIFY_TOKEN", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     secret_key: str = os.getenv("SECRET_KEY", "your-secret-key")
-    allowed_origins: str = os.getenv("ALLOWED_ORIGINS", "https://instagram.teabag.online,http://localhost:3000")
+    allowed_origins: str = os.getenv("CORS_ALLOWED_ORIGINS", os.getenv("ALLOWED_ORIGINS", "https://instagram-app.teabag.online,http://localhost:3000"))
     
     class Config:
         env_file = ".env"
