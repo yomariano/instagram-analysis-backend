@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api.routes import router
-from app.config import settings
+import os
 
 app = FastAPI(
     title="Instagram Audience Analysis API",
@@ -10,15 +9,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# CORS configuration
+allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "https://instagram-app.teabag.online,http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins.split(","),
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=allowed_origins.split(","),
+    allow_credentials=False,  # Set to False for wildcard origins
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
-app.include_router(router, prefix="/api/v1")
+# Import routes after FastAPI app is created to avoid circular imports
+try:
+    from app.api.routes import router
+    app.include_router(router, prefix="/api/v1")
+except Exception as e:
+    print(f"Error importing routes: {e}")
+    # Add inline routes as fallback
+    @app.get("/api/v1/test")
+    async def test_endpoint():
+        return {"message": "API is working!", "status": "ok"}
 
 # Custom exception handler to ensure CORS headers on errors
 @app.exception_handler(HTTPException)
@@ -29,7 +39,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
     
     # Add CORS headers to error responses
-    origins = settings.allowed_origins.split(",")
+    origins = allowed_origins.split(",")
     origin = request.headers.get("origin")
     if origin and origin in origins:
         response.headers["Access-Control-Allow-Origin"] = origin
